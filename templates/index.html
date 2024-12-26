@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Selector and File Upload</title>
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            height: 100vh;
+            background: url('https://www.transparenttextures.com/patterns/cubes.png'),
+                        linear-gradient(135deg, #74b9ff, #a29bfe);
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .content {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            display: flex;
+            gap: 50px;
+            align-items: stretch;
+        }
+
+        .box {
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        img {
+            margin-top: 15px;
+            max-width: 100%;
+            max-height: 300px;
+            display: none;
+            border-radius: 12px;
+        }
+
+        #witty-comment {
+            margin-top: 10px;
+            font-size: 18px;
+            color: #555;
+            text-align: center;
+            display: none;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #0984e3;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #74b9ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <div class="box">
+            <h3>Select an Animal</h3>
+            <label><input type="radio" name="animal" value="cat"> Cat</label>
+            <label><input type="radio" name="animal" value="dog"> Dog</label>
+            <label><input type="radio" name="animal" value="elephant"> Elephant</label>
+            <button onclick="showAnimal()">Show GIF</button>
+            <img id="animal-gif" src="" alt="Selected Animal GIF">
+            <div id="witty-comment"></div>
+        </div>
+
+        <div class="box">
+            <h3>Upload a File</h3>
+            <input type="file" id="file-input">
+            <button onclick="uploadFile()">Upload</button>
+            <div id="file-info"></div>
+        </div>
+    </div>
+
+    <script>
+        const wittyComments = {
+            cat: "Cats: Proof that laziness can look cute.",
+            dog: "Dogs: Making humans smile since forever.",
+            elephant: "Elephants: Big size, bigger heart."
+        };
+
+        const gifPaths = {
+            cat: "/static/images/cat.gif",
+            dog: "/static/images/dog.gif",
+            elephant: "/static/images/elephant.gif"
+        };
+
+        function showAnimal() {
+            const animal = document.querySelector('input[name="animal"]:checked')?.value;
+            if (!animal) {
+                alert('Please select an animal.');
+                return;
+            }
+
+            const animalGif = document.getElementById('animal-gif');
+            const wittyComment = document.getElementById('witty-comment');
+
+            animalGif.src = gifPaths[animal];
+            animalGif.style.display = 'block';
+
+            wittyComment.innerText = wittyComments[animal];
+            wittyComment.style.display = 'block';
+        }
+
+        function uploadFile() {
+            const input = document.getElementById('file-input');
+            const file = input.files[0];
+            if (!file) {
+                alert('Please select a file.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    document.getElementById('file-info').innerHTML = `
+                        <p><strong>Name:</strong> ${data.name}</p>
+                        <p><strong>Size:</strong> ${data.size} bytes</p>
+                        <p><strong>Type:</strong> ${data.type}</p>
+                    `;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
